@@ -10,7 +10,6 @@ Created on Mon Aug 30 22:48:27 2021
 IMPORTING PACKAGES
 """""""""""""""
 import os 
-import math
 import numpy as np
 import pandas as pd 
 import seaborn as sns
@@ -18,10 +17,8 @@ import matplotlib.pyplot as plt
 import statsmodels.formula.api as smf
 import statsmodels.api as sm
 from statsmodels.stats.diagnostic import normal_ad
-from statsmodels.stats.outliers_influence import variance_inflation_factor
-from statsmodels.tools.tools import add_constant
-
-from plotnine import ggplot, aes, geom_histogram, labs, geom_boxplot
+from collections import defaultdict
+from plotnine import ggplot, aes, geom_histogram, labs
 
 """""""""""""""
 FUNCTIONS
@@ -266,4 +263,19 @@ vif_check = gt_filtered.drop('CO', axis = 1)
 
 cc = np.corrcoef(vif_check, rowvar = False)
 VIF = np.linalg.inv(cc)
-VIF.diagonal()
+vif_diag = VIF.diagonal()
+
+# Get a better view of which elements have multicollinearity 
+# Get a list of the column names from filtered data frame
+gt_names = gt_filtered.columns.values.tolist()
+
+# Remove 'CO' from gt_names list
+index = 8
+gt_names.pop(index)
+
+gt_names = pd.Series(gt_names)
+vif_diag = pd.Series(vif_diag)
+vif_df = pd.concat([gt_names, vif_diag], axis = 1)
+
+vif_df.columns = ['Gas', 'VIF']
+print(vif_df)
